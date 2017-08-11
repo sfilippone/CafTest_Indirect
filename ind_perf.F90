@@ -6,11 +6,15 @@ program tst_ind_1
 #ifndef IS_INTEL
   type(event_type), allocatable   :: ready(:)[:]
 #endif
-  integer, parameter :: nloc=128*128, nhl=128
+  integer, parameter :: nloc=128*128*128, nhl=16*128
   integer :: nrcv, ivsize, me, np, nxch, i, ip, iv
+  integer :: icnt1, icnt2, icr
+  real :: t1, t2
 
   me = this_image()
   np = num_images()
+
+  call system_clock(count_rate=icr)
   
   if (np==1) then
     !    allocate(xchg(0))
@@ -21,7 +25,11 @@ program tst_ind_1
   else if (me == np) then
     xchg = [me-1]
   else
-    xchg = [me-1, me+1]
+    if (mod(me,2) == 0) then 
+      xchg = [me-1, me+1]
+    else
+      xchg = [me+1, me-1]
+    end if
   end if
   nxch = size(xchg)
   nrcv = nhl * nxch
@@ -45,7 +53,10 @@ program tst_ind_1
     end if
     iv = iv + nhl
   end do
-  write(*,*) me,' Syncng with :',xchg
+  write(*,*) me,' Syncng with :',xchg, icr
+  sync all 
+
+  call system_clock(count=icnt1)
     
 #ifdef IS_INTEL
   sync images(xchg)
@@ -60,10 +71,13 @@ program tst_ind_1
 #ifndef  IS_INTEL
     event wait (ready(xchg(ip)))
 #endif
-    xv(loc_idx(1:nhl,ip)) = xv(rmt_idx(1:nhl,ip))[xchg(ip)]
+    !xv(loc_idx(1:nhl,ip)) = xv(rmt_idx(1:nhl,ip))[xchg(ip)]
+    xv(iv:iv+nhl-1) = xv(rmt_idx(1:nhl,ip))[xchg(ip)]
   end do
+  call system_clock(count=icnt2)
+  t1 = real(icnt2-icnt1)/real(icr)
 
-  write(*,*) me,'Completed exchange'
+  write(*,*) me,'Completed exchange', t1
 !!$  sync all
 !!$  do ip=1, np
 !!$    if (ip == me) &
