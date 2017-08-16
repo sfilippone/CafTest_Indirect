@@ -50,7 +50,9 @@ program tst_ind_ab
   iv = nloc + 1
   do ip=1, nxch
     !xv%v(loc_idx(1:nhl,ip)) = xv%v(rmt_idx(1:nhl,ip))[xchg(ip)]
-    tv(loc_idx(1:nhl,ip)) = xv%v(rmt_idx(1:nhl,ip))[xchg(ip)]
+    !tv(loc_idx(1:nhl,ip)) = xv%v(rmt_idx(1:nhl,ip))[xchg(ip)]
+    tv(iv:iv+nhl-1) = xv%v(rmt_idx(1:nhl,ip))[xchg(ip)]
+    iv = iv + nhl
   end do
   
   do ip=1, np

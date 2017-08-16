@@ -33,8 +33,8 @@ program testOverlap
 	e_c = MPI_Wtime()
      endif
 
-     if(me==1) write(*,*) me, e_t-s_t,"this time should be less than the one printed by the last image"
-     if(me==np) write(*,*) me, e_c-s_c
+     if (me==1)  write(*,*) me, e_t-s_t,"this time should be less than the one printed by the last image"
+     if (me==np) write(*,*) me, e_c-s_c
      sync all
   enddo
 
@@ -47,7 +47,7 @@ subroutine computing(res,n)
   integer, intent(in) :: n
   real(kind=8),intent(out) :: res
   integer 	      :: i
-
+  res = 0.d0
   do i=1,2*n
     res = res + log(res)/(1984/i*2)
     res = res - sqrt(res)
